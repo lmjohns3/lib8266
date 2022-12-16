@@ -1,7 +1,7 @@
-#ifndef PIRATE__WIFI__H__
-#define PIRATE__WIFI__H__
+#ifndef LIB8266__WIFI__H__
+#define LIB8266__WIFI__H__
 
-#include "pirate/base.h"
+#include "lib8266/base.h"
 
 esp_err_t ahoy_wifi_init_sta(const char *ssid, const char *pass);
 

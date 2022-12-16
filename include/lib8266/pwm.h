@@ -1,5 +1,5 @@
-#ifndef PIRATE__PWM__H__
-#define PIRATE__PWM__H__
+#ifndef LIB8266__PWM__H__
+#define LIB8266__PWM__H__
 
 #include "driver/pwm.h"
 

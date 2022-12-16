@@ -1,8 +1,8 @@
-#ifndef PIRATE__COLOR__H__
-#define PIRATE__COLOR__H__
+#ifndef LIB8266__COLOR__H__
+#define LIB8266__COLOR__H__
 
-#include "pirate/base.h"
-#include "pirate/fixed.h"
+#include "lib8266/base.h"
+#include "lib8266/fixed.h"
 
 void ahoy_color_rgb_to_hsi(uint32_t rgb, ahoy_fixed_t *hsi);
 

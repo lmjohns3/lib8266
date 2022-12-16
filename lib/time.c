@@ -1,8 +1,8 @@
 #include <sys/time.h>
 #include <time.h>
 
-#include "pirate/http.h"
-#include "pirate/time.h"
+#include "lib8266/http.h"
+#include "lib8266/time.h"
 
 #define ISO_DATETIME_LENGTH 20
 #define D(i, pow) ((iso[(i)] - '0') * (pow))

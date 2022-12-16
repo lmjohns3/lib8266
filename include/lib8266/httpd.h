@@ -1,9 +1,9 @@
-#ifndef PIRATE__HTTPD__H__
-#define PIRATE__HTTPD__H__
+#ifndef LIB8266__HTTPD__H__
+#define LIB8266__HTTPD__H__
 
 #include "esp_http_server.h"
 
-#include "pirate/base.h"
+#include "lib8266/base.h"
 
 esp_err_t ahoy_httpd_init(httpd_handle_t *server);
 

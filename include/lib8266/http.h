@@ -1,9 +1,9 @@
-#ifndef PIRATE__HTTP__H__
-#define PIRATE__HTTP__H__
+#ifndef LIB8266__HTTP__H__
+#define LIB8266__HTTP__H__
 
 #include "esp_http_client.h"
 
-#include "pirate/base.h"
+#include "lib8266/base.h"
 
 typedef void (* ahoy_http_poll_cb)(esp_http_client_config_t *, esp_http_client_handle_t);
 

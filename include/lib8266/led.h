@@ -1,7 +1,7 @@
-#ifndef PIRATE__LED__H__
-#define PIRATE__LED__H__
+#ifndef LIB8266__LED__H__
+#define LIB8266__LED__H__
 
-#include "pirate/pwm.h"
+#include "lib8266/pwm.h"
 
 typedef struct ahoy_led *ahoy_led_handle;
 

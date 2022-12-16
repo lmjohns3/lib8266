@@ -3,8 +3,8 @@
 
 #include "esp8266/gpio_struct.h"
 
-#include "pirate/base.h"
-#include "pirate/ws2812.h"
+#include "lib8266/base.h"
+#include "lib8266/ws2812.h"
 
 static const char* TAG = "ws2812";
 

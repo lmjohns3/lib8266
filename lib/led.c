@@ -1,7 +1,7 @@
 #include "queue.h"
 
-#include "pirate/color.h"
-#include "pirate/led.h"
+#include "lib8266/color.h"
+#include "lib8266/led.h"
 
 static const char *TAG = "led";
 

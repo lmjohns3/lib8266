@@ -1,4 +1,4 @@
-#include "pirate/color.h"
+#include "lib8266/color.h"
 
 void ahoy_color_rgb_to_hsi(uint32_t rgb, ahoy_fixed_t *hsi) {
   const ahoy_fixed_t

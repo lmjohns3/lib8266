@@ -1,5 +1,5 @@
-#ifndef PIRATE__WS2812__H__
-#define PIRATE__WS2812__H__
+#ifndef LIB8266__WS2812__H__
+#define LIB8266__WS2812__H__
 
 #include "driver/gpio.h"
 

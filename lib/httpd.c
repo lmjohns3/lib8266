@@ -1,5 +1,5 @@
-#include "pirate/httpd.h"
-#include "pirate/wifi.h"
+#include "lib8266/httpd.h"
+#include "lib8266/wifi.h"
 
 static const char *TAG = "httpd";
 
