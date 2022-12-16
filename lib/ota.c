@@ -1,8 +1,8 @@
 #include "esp_https_ota.h"
 
-#include "pirate/http.h"
-#include "pirate/ota.h"
-#include "pirate/wifi.h"
+#include "lib8266/http.h"
+#include "lib8266/ota.h"
+#include "lib8266/wifi.h"
 
 static void update(esp_http_client_config_t *http, esp_http_client_handle_t client) {
   if (esp_https_ota(http) == ESP_OK) esp_restart();

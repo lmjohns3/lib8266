@@ -2,8 +2,8 @@
 #include <stdlib.h>
 #include <string.h>
 
-#include "pirate/base.h"
-#include "pirate/pwm.h"
+#include "lib8266/base.h"
+#include "lib8266/pwm.h"
 
 static const char *TAG = "pwm";
 
@@ -22,12 +22,12 @@ esp_err_t ahoy_pwm_init(uint16_t cycle_us, uint8_t n, uint8_t *pins) {
   }
   {
     uint32_t *duties = calloc(n, sizeof(uint32_t));
-    AHOY_RETURN_IF_ERROR(pwm_init(pwm_cycle_us, duties, n, pwm_channel_to_pin));
+    AHOY_RETURN_IF_NOT_OK(pwm_init(pwm_cycle_us, duties, n, pwm_channel_to_pin));
     free(duties);
   }
   {
     int16_t *phases = calloc(n, sizeof(int16_t));
-    AHOY_RETURN_IF_ERROR(pwm_set_phases(phases));
+    AHOY_RETURN_IF_NOT_OK(pwm_set_phases(phases));
     free(phases);
   }
   return ESP_OK;
@@ -40,7 +40,7 @@ esp_err_t ahoy_pwm_set(uint8_t num_channels, uint8_t *channels, ahoy_fixed_t *le
              channel,
              pwm_channel_to_pin[channel],
              AHOY_FIXED_TO_FLOAT(level));
-    AHOY_RETURN_IF_ERROR(
+    AHOY_RETURN_IF_NOT_OK(
         pwm_set_duty(channels[i],
                      L8_FIXED_CLAMP_01(levels[i]) * pwm_cycle_us / L8_FIXED_1));
   }

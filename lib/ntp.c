@@ -1,7 +1,7 @@
 #include "lwip/apps/sntp.h"
 
-#include "pirate/ntp.h"
-#include "pirate/wifi.h"
+#include "lib8266/ntp.h"
+#include "lib8266/wifi.h"
 
 static const char *TAG = "ntp";
 
@@ -23,7 +23,7 @@ esp_err_t ahoy_ntp_init(uint8_t max_retries) {
   return retry == max_retries ? ESP_ERR_TIMEOUT : ESP_OK;
 }
 
-void current_time(struct tm *timeinfo) {
+void ahoy_now(struct tm *timeinfo) {
   time_t now = 0;
   time(&now);
   localtime_r(&now, timeinfo);

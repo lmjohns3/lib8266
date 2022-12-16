@@ -1,4 +1,4 @@
-#include "pirate/fixed.h"
+#include "lib8266/fixed.h"
 
 /* Compute the fixed-point base-e exponential function, exp(x) = e^x.
  *

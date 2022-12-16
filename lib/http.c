@@ -1,5 +1,5 @@
-#include "pirate/http.h"
-#include "pirate/wifi.h"
+#include "lib8266/http.h"
+#include "lib8266/wifi.h"
 
 static const char *TAG = "http";
 
@@ -66,7 +66,7 @@ void ahoy_http_poll(uint32_t period_ms,
                     const char *cert,
                     ahoy_http_poll_cb callback) {
   params *p = malloc(sizeof(params));
-  p->period = period_ms / portTICK_PERIOD_MS;
+  p->period = pdMS_TO_TICKS(period_ms);
   p->callback = callback;
   p->http = (esp_http_client_config_t *) malloc(sizeof(esp_http_client_config_t));
   memset(p->http, 0, sizeof(esp_http_client_config_t));

@@ -3,8 +3,8 @@
 #include "esp_event_loop.h"
 #include "esp_wifi.h"
 
-#include "pirate/base.h"
-#include "pirate/wifi.h"
+#include "lib8266/base.h"
+#include "lib8266/wifi.h"
 
 #define AHOY_WIFI_CONNECTED_BIT BIT0
 
@@ -53,28 +53,28 @@ static esp_err_t event_handler(void *ctx, system_event_t *event) {
 esp_err_t pre_init() {
   tcpip_adapter_init();
   connection_event_group = xEventGroupCreate();
-  AHOY_RETURN_IF_ERROR(esp_event_loop_init(event_handler, NULL));
+  AHOY_RETURN_IF_NOT_OK(esp_event_loop_init(event_handler, NULL));
   wifi_init_config_t cfg = WIFI_INIT_CONFIG_DEFAULT();
-  AHOY_RETURN_IF_ERROR(esp_wifi_init(&cfg));
-  AHOY_RETURN_IF_ERROR(esp_wifi_set_storage(WIFI_STORAGE_RAM));
+  AHOY_RETURN_IF_NOT_OK(esp_wifi_init(&cfg));
+  AHOY_RETURN_IF_NOT_OK(esp_wifi_set_storage(WIFI_STORAGE_RAM));
   return ESP_OK;
 }
 
 esp_err_t ahoy_wifi_init_sta(const char *ssid, const char *pass) {
-  AHOY_RETURN_IF_ERROR(pre_init());
+  AHOY_RETURN_IF_NOT_OK(pre_init());
   wifi_config_t cfg;
   memset(&cfg, 0, sizeof(wifi_config_t));
   strncpy((char *) cfg.sta.ssid, ssid, 32);
   strncpy((char *) cfg.sta.password, pass, 64);
   ESP_LOGI(TAG, "Connecting to WiFi SSID %s...", cfg.sta.ssid);
-  AHOY_RETURN_IF_ERROR(esp_wifi_set_mode(WIFI_MODE_STA));
-  AHOY_RETURN_IF_ERROR(esp_wifi_set_config(ESP_IF_WIFI_STA, &cfg));
-  AHOY_RETURN_IF_ERROR(esp_wifi_start());
+  AHOY_RETURN_IF_NOT_OK(esp_wifi_set_mode(WIFI_MODE_STA));
+  AHOY_RETURN_IF_NOT_OK(esp_wifi_set_config(ESP_IF_WIFI_STA, &cfg));
+  AHOY_RETURN_IF_NOT_OK(esp_wifi_start());
   return ESP_OK;
 }
 
 esp_err_t ahoy_wifi_init_ap(const char *ssid, const char *pass) {
-  AHOY_RETURN_IF_ERROR(pre_init());
+  AHOY_RETURN_IF_NOT_OK(pre_init());
   wifi_config_t cfg;
   strncpy((char *) cfg.ap.ssid, ssid, 32);
   cfg.ap.ssid_len = strlen(ssid);
@@ -87,9 +87,9 @@ esp_err_t ahoy_wifi_init_ap(const char *ssid, const char *pass) {
     cfg.ap.authmode = WIFI_AUTH_WPA_WPA2_PSK;
   }
   ESP_LOGI(TAG, "Starting WiFi AP with SSID %s...", cfg.ap.ssid);
-  AHOY_RETURN_IF_ERROR(esp_wifi_set_mode(WIFI_MODE_AP));
-  AHOY_RETURN_IF_ERROR(esp_wifi_set_config(ESP_IF_WIFI_AP, &cfg));
-  AHOY_RETURN_IF_ERROR(esp_wifi_start());
+  AHOY_RETURN_IF_NOT_OK(esp_wifi_set_mode(WIFI_MODE_AP));
+  AHOY_RETURN_IF_NOT_OK(esp_wifi_set_config(ESP_IF_WIFI_AP, &cfg));
+  AHOY_RETURN_IF_NOT_OK(esp_wifi_start());
   return ESP_OK;
 }
 

@@ -1,7 +1,7 @@
-#ifndef PIRATE__FIXED__H__
-#define PIRATE__FIXED__H__
+#ifndef LIB8266__FIXED__H__
+#define LIB8266__FIXED__H__
 
-#include "pirate/base.h"
+#include "lib8266/base.h"
 
 // We'll use signed 32-bit fixed-point values instead of floats, using 2^16 =
 // 0x10000 = 65536 as our scale -- why the hell not. This gives a fractional
