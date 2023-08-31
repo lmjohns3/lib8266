@@ -1,7 +1,7 @@
 #include "lib8266/httpd.h"
 #include "lib8266/wifi.h"
 
-static const char *TAG = "httpd";
+static const char *TAG = "⚓ httpd";
 
 esp_err_t ahoy_httpd_init(httpd_handle_t *server) {
   httpd_config_t config = HTTPD_DEFAULT_CONFIG();

@@ -1,7 +1,9 @@
+#include <string.h>
+
 #include "lib8266/http.h"
 #include "lib8266/wifi.h"
 
-static const char *TAG = "http";
+static const char *TAG = "⚓ http";
 
 static esp_err_t logging_event_handler(esp_http_client_event_t *event) {
   switch(event->event_id) {
