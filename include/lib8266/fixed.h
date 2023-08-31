@@ -14,6 +14,7 @@ typedef int32_t ahoy_fixed_t;
 #define AHOY_FIXED_LARGEST_POSITIVE 0x7fffffff
 #define AHOY_FIXED_SMALLEST_POSITIVE 1
 
+#define AHOY_FIXED_FRACTION_BITS 16
 #define AHOY_FIXED_1 65536
 #define AHOY_FIXED_E 178145
 #define AHOY_FIXED_PI 205887
@@ -21,12 +22,13 @@ typedef int32_t ahoy_fixed_t;
 
 #define AHOY_TO_FIXED(x) ((ahoy_fixed_t)(AHOY_FIXED_1 * (x)))
 #define AHOY_FIXED_TO_FLOAT(x) (((float)(x)) / ((float)AHOY_FIXED_1))
-#define AHOY_FIXED_TO_INT(x)  (((x) & 0xffff0000) >> 16)
+#define AHOY_FIXED_TO_INT(x)  (((x) & 0xffff0000) >> AHOY_FIXED_FRACTION_BITS)
 
 #define AHOY_FIXED_ABS_FRACTION(x) ((x) & 0x0000ffff)
 
 #define AHOY_FIXED_CLAMP_01(x) ((x) < 0 ? 0 : (x) > AHOY_FIXED_1 ? AHOY_FIXED_1 : (x))
 
+ahoy_fixed_t ahoy_fixed_mul(ahoy_fixed_t a, ahoy_fixed_t b);
 ahoy_fixed_t ahoy_fixed_exp(ahoy_fixed_t x);
 ahoy_fixed_t ahoy_fixed_log(ahoy_fixed_t x);
 ahoy_fixed_t ahoy_fixed_mod(ahoy_fixed_t numer, ahoy_fixed_t denom);

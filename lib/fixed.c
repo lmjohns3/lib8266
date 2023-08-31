@@ -1,5 +1,10 @@
 #include "lib8266/fixed.h"
 
+/* Compute the product of two fixed-point values. */
+ahoy_fixed_t ahoy_fixed_mul(ahoy_fixed_t a, ahoy_fixed_t b) {
+  return (a * b) >> AHOY_FIXED_FRACTION_BITS;
+}
+
 /* Compute the fixed-point base-e exponential function, exp(x) = e^x.
  *
  * We first scale x, dividing successively by 2, until x is in the range [-1, 1].
