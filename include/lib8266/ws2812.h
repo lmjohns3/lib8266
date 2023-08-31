@@ -14,6 +14,6 @@ ahoy_ws2812_handle ahoy_ws2812_init(uint16_t pin, uint32_t count, ahoy_ws2812_ch
 
 void ahoy_ws2812_set(ahoy_ws2812_handle ws2812, uint32_t count, uint32_t *locations, uint32_t *words);
 
-esp_err_t ahoy_ws2812_render(const ahoy_ws2812_handle ws2812);
+void ahoy_ws2812_render(const ahoy_ws2812_handle ws2812);
 
 #endif

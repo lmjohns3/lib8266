@@ -6,10 +6,10 @@
 #include "lib8266/base.h"
 #include "lib8266/ws2812.h"
 
-static const char* TAG = "ws2812";
-
-/* One "nop" assembler instruction runs in ~1 CPU tick. At 80MHz, 8 ticks runs
- * in 100ns, so 300 ns = 24 = 8 * 3 ticks and 800 ns = 64 = 8 * 8 ticks. */
+// One "nop" assembler instruction runs in ~1 CPU tick. At 80MHz, 8
+// CPU ticks = 100ns, so 300ns = 3 * 100ns = 3 * (8 CPU ticks) = 24
+// CPU ticks; similarly, 800 ns = 64 CPU ticks.
+ 
 #define SHORT_NOP "nop;nop;nop;nop;nop;nop;nop;nop;" \
                   "nop;nop;nop;nop;nop;nop;nop;nop;" \
                   "nop;nop;nop;nop;nop;nop;nop;nop;"
@@ -24,36 +24,13 @@ static const char* TAG = "ws2812";
 
 static inline void write_bit(uint16_t pin, uint32_t bit) {
   GPIO.out_w1ts = 1 << pin;
-  bit ? asm volatile (LONG_NOP) : asm volatile (SHORT_NOP);
+  if (bit) {
+    asm volatile (LONG_NOP);
+  } else {
+    asm volatile (SHORT_NOP);
+  }
   GPIO.out_w1tc = 1 << pin;
   asm volatile (LONG_NOP);
-}
-
-/* https://sub.nanona.fi/esp8266/timing-and-ticks.html */
-static void check_timings(uint16_t pin) {
-  uint32_t start, end;
-  taskENTER_CRITICAL();
-  ESP_LOGI(TAG, " ");
-  ESP_LOGI(TAG, "Profiling CPU timings...");
-  os_delay_us(10);
-  asm volatile (LONG_NOP);
-  start = soc_get_ccount(); asm volatile ("nop"); end = soc_get_ccount();
-  ESP_LOGI(TAG, "asm nop = %d ticks (target 1)", end - start - 1);
-  start = soc_get_ccount(); GPIO.out_w1tc = 1 << pin; end = soc_get_ccount();
-  ESP_LOGI(TAG, "GPIO set low = %d ticks (target ~10)", end - start - 1);
-  start = soc_get_ccount(); GPIO.out_w1ts = 1 << pin; end = soc_get_ccount();
-  ESP_LOGI(TAG, "GPIO set high = %d ticks (target ~10)", end - start - 1);
-  start = soc_get_ccount(); asm volatile (_SHORT); end = soc_get_ccount();
-  ESP_LOGI(TAG, "short delay = %d ticks (target 24)", end - start - 1);
-  start = soc_get_ccount(); asm volatile (_LONG); end = soc_get_ccount();
-  ESP_LOGI(TAG, "long delay = %d ticks (target 64)", end - start - 1);
-  start = soc_get_ccount(); write_bit(pin, 0); end = soc_get_ccount();
-  ESP_LOGI(TAG, "0-bit = %d ticks (target ~100)", end - start - 1);
-  start = soc_get_ccount(); write_bit(pin, 1); end = soc_get_ccount();
-  ESP_LOGI(TAG, "1-bit = %d ticks (target ~150)", end - start - 1);
-  start = soc_get_ccount(); os_delay_us(10); end = soc_get_ccount();
-  ESP_LOGI(TAG, "10us delay = %d ticks (target ~800)", end - start - 1);
-  taskEXIT_CRITICAL();
 }
 
 /* With a generic gamma value, we'd need to cast to float, divide by 255, call
@@ -175,13 +152,13 @@ void ahoy_ws2812_render(const ahoy_ws2812_handle ws2812) {
   if (ws2812->channels == AHOY_WS2812_GRBW) {
     taskENTER_CRITICAL();
     for (int i = 0; i < count; ++i) {
-      write_word_grbw(pin, ws2812->words[i]);
+      write_word_grbw(pin, adjust_gamma2(ws2812->words[i]));
     }
     taskEXIT_CRITICAL();
   } else if (ws2812->channels == AHOY_WS2812_GRB) {
     taskENTER_CRITICAL();
     for (int i = 0; i < count; ++i) {
-      write_word_grb(pin, ws2812->words[i]);
+      write_word_grb(pin, adjust_gamma2(ws2812->words[i]));
     }
     taskEXIT_CRITICAL();
   }
