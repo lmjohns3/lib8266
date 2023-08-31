@@ -13,10 +13,10 @@ void ahoy_color_rgb_to_hsi(uint32_t rgb, ahoy_fixed_t *hsi) {
     radius = AHOY_TO_FIXED(6) * (max - min),
     _1_3 = AHOY_FIXED_1 / 3,
     _2_3 = AHOY_FIXED_1 * 2 / 3,
-    hue = AHOY_FIXED_FRACTION(max == min ?                     0 :
-                              max == r ?        (g - b) / radius :
-                              max == g ? _1_3 + (b - r) / radius :
-                                         _2_3 + (r - g) / radius);
+    hue = AHOY_FIXED_ABS_FRACTION(max == min ?                     0 :
+                                  max == r ?        (g - b) / radius :
+                                  max == g ? _1_3 + (b - r) / radius :
+                                             _2_3 + (r - g) / radius);
   hsi[0] = hue < 0 ? hue + AHOY_FIXED_1 : hue;
   hsi[1] = saturation;
   hsi[2] = intensity;
@@ -25,7 +25,7 @@ void ahoy_color_rgb_to_hsi(uint32_t rgb, ahoy_fixed_t *hsi) {
 void ahoy_color_hsi_to_rgbw(const ahoy_fixed_t *hsi, ahoy_fixed_t *rgbw) {
   /* https://en.wikipedia.org/wiki/HSL_and_HSV#HSI_to_RGB */
   const ahoy_fixed_t
-    hue = ahoy_fixed_mod(hsi[0], AHOY_),
+    hue = ahoy_fixed_mod(hsi[0], AHOY_FIXED_1),
     saturation = AHOY_FIXED_CLAMP_01(hsi[1]),
     intensity = AHOY_FIXED_CLAMP_01(hsi[2]),
     segment = AHOY_TO_FIXED(6) * hue,

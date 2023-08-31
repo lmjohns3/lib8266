@@ -6,6 +6,6 @@
 
 void ahoy_color_rgb_to_hsi(uint32_t rgb, ahoy_fixed_t *hsi);
 
-uint32_t ahoy_color_hsi_to_rgbw(const ahoy_fixed_t *hsi);
+void ahoy_color_hsi_to_rgbw(const ahoy_fixed_t *hsi, ahoy_fixed_t *rgbw);
 
 #endif
