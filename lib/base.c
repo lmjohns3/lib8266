@@ -24,3 +24,20 @@ inline void ahoy_busy_wait_ticks(uint32_t ticks) {
   if (stop < start) { while (ahoy_ccount() > stop) ;; }
   while (ahoy_ccount() < stop) ;;
 }
+
+/* https://stackoverflow.com/questions/51752284/how-to-calculate-crc8-in-c */
+uint8_t ahoy_crc8(uint8_t polynomial, uint8_t *bytes, uint8_t num_bytes) {
+  uint16_t i = 0, j = 0, crc = 0xff;
+  for (i = 0; i < num_bytes; ++i) {
+    crc ^= bytes[i];
+    crc = crc & 0x80 ? (crc << 1) ^ polynomial : crc << 1;
+    crc = crc & 0x80 ? (crc << 1) ^ polynomial : crc << 1;
+    crc = crc & 0x80 ? (crc << 1) ^ polynomial : crc << 1;
+    crc = crc & 0x80 ? (crc << 1) ^ polynomial : crc << 1;
+    crc = crc & 0x80 ? (crc << 1) ^ polynomial : crc << 1;
+    crc = crc & 0x80 ? (crc << 1) ^ polynomial : crc << 1;
+    crc = crc & 0x80 ? (crc << 1) ^ polynomial : crc << 1;
+    crc = crc & 0x80 ? (crc << 1) ^ polynomial : crc << 1;
+  }
+  return crc & 0xff;
+}

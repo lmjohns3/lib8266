@@ -27,4 +27,6 @@ uint32_t ahoy_ccount();
 void ahoy_busy_wait_us(uint32_t wait_us);
 void ahoy_busy_wait_ticks(uint32_t ticks);
 
+uint8_t ahoy_crc8(uint8_t polynomial, uint8_t *bytes, uint8_t num_bytes);
+
 #endif
