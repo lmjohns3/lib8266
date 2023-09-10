@@ -7,6 +7,8 @@
 #define ISO_DATETIME_LENGTH 20
 #define D(i, pow) ((iso[(i)] - '0') * (pow))
 
+static const char* TAG = "⚓ time";
+
 static void update(esp_http_client_config_t *http, esp_http_client_handle_t client) {
   char iso[ISO_DATETIME_LENGTH];
   if (esp_http_client_read(client, iso, ISO_DATETIME_LENGTH) == ISO_DATETIME_LENGTH) {
@@ -18,9 +20,9 @@ static void update(esp_http_client_config_t *http, esp_http_client_handle_t clie
         .tm_min = D(14, 10) + D(15, 1),
         .tm_sec = D(17, 10) + D(18, 1),
     };
-    ESP_LOGI("Setting time: %s", asctime(&tm));
-    struct timeval now = { .tv_sec = mktime(&tm) };
-    /*settimeofday(&now, NULL);*/
+    ESP_LOGI(TAG, "setting time: %s", asctime(&tm));
+    //struct timeval now = { .tv_sec = mktime(&tm) };
+    //settimeofday(&now, NULL);
   }
 }
 

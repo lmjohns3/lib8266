@@ -53,7 +53,7 @@ esp_err_t ahoy_ntp_sync() {
       ESP_LOGE(TAG, "recvfrom failed: errno %d", errno);
     } else {
       const int64_t elapsed_usec = esp_timer_get_time() - mark;
-      ESP_LOGD(TAG, "received NTP response after %ld usec:", elapsed_usec);
+      ESP_LOGD(TAG, "received NTP response after %u usec:", (uint32_t)elapsed_usec);
 
       const uint8_t li = rx[0] & 0b11000000;
       const uint8_t vn = rx[0] & 0b00111000;
@@ -71,13 +71,13 @@ esp_err_t ahoy_ntp_sync() {
       uint32_t reference_id = ntoh(rx + 12);
       ESP_LOGD(TAG, "+ reference id %u", reference_id);
       int64_t ref_sec = ntoh(rx + 16), ref_frac = ntoh(rx + 20);
-      ESP_LOGD(TAG, "+ reference time %u.%u", ref_sec, ref_frac);
+      ESP_LOGD(TAG, "+ reference time %u.%u", (uint32_t)ref_sec, (uint32_t)ref_frac);
       int64_t orig_sec = ntoh(rx + 24), orig_frac = ntoh(rx + 28);
-      ESP_LOGD(TAG, "+ original time %u.%u", orig_sec, orig_frac);
+      ESP_LOGD(TAG, "+ original time %u.%u", (uint32_t)orig_sec, (uint32_t)orig_frac);
       int64_t rcv_sec = ntoh(rx + 32), rcv_frac = ntoh(rx + 36);
-      ESP_LOGD(TAG, "+ receive time %u.%u", rcv_sec, rcv_frac);
+      ESP_LOGD(TAG, "+ receive time %u.%u", (uint32_t)rcv_sec, (uint32_t)rcv_frac);
       int64_t xmit_sec = ntoh(rx + 40), xmit_frac = ntoh(rx + 44);
-      ESP_LOGD(TAG, "+ transmit time %u.%u", xmit_sec, xmit_frac);
+      ESP_LOGD(TAG, "+ transmit time %u.%u", (uint32_t)xmit_sec, (uint32_t)xmit_frac);
 
       struct timeval tv = { .tv_sec = (time_t)(xmit_sec - SEC_1900_TO_1970), .tv_usec = 0 };
       settimeofday(&tv, 0);
