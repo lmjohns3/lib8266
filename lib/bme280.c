@@ -12,55 +12,66 @@ static const char *TAG = "⚓ bme280";
 
 #define ADDRESS 0x77
 
+/* Datasheet: https://cdn-learn.adafruit.com/assets/assets/000/115/588/original/bst-bme280-ds002.pdf */
 
-static esp_err_t install(ahoy_bme280_t *bme280) {
+/* Official code: https://github.com/boschsensortec/BME280_driver */
+
+/* Third-party implementation: https://github.com/malokhvii-eduard/arduino-bme280 */
+
+/* Helpful debugging page with example compensation values from 2 chips:
+   https://community.bosch-sensortec.com/t5/MEMS-sensors-forum/Several-BME280-sensors-giving-invalid-values/td-p/11903 */
+
+
+static esp_err_t install(ahoy_bme280_device_t *dev) {
   i2c_config_t conf;
   conf.mode = I2C_MODE_MASTER;
-  conf.sda_io_num = bme280->sda_pin;
+  conf.sda_io_num = dev->sda_pin;
   conf.sda_pullup_en = GPIO_PULLUP_ENABLE;
-  conf.scl_io_num = bme280->scl_pin;
+  conf.scl_io_num = dev->scl_pin;
   conf.scl_pullup_en = GPIO_PULLUP_ENABLE;
-  conf.clk_stretch_tick = bme280->clk_stretch_tick;
+  conf.clk_stretch_tick = dev->clk_stretch_tick;
   ESP_ERROR_CHECK(i2c_driver_install(I2C_NUM_0, conf.mode));
   ESP_ERROR_CHECK(i2c_param_config(I2C_NUM_0, &conf));
+  ESP_LOGI(TAG, "installed i2c driver");
   return ESP_OK;
 }
 
-static esp_err_t read_compensation_values(ahoy_bme280_t *bme280) {
-  uint8_t buf[25];
+static esp_err_t read_compensation_values(ahoy_bme280_device_t *dev) {
+  uint8_t buf[26];
   i2c_cmd_handle_t cmd;
   esp_err_t ret;
 
-  /* Compensation values are stored in two blocks of registers. */
-
-  /* Read the first block. */
+  /* Read the first block of compensation values. */
   cmd = i2c_cmd_link_create();
   i2c_master_start(cmd);
   i2c_master_write_byte(cmd, ADDRESS << 1 | I2C_MASTER_WRITE, CHECK_ACK);
   i2c_master_write_byte(cmd, 0x88, CHECK_ACK);
   i2c_master_start(cmd);
   i2c_master_write_byte(cmd, ADDRESS << 1 | I2C_MASTER_READ, CHECK_ACK);
-  i2c_master_read(cmd, buf, 25, SEND_NACK_LAST);
+  i2c_master_read(cmd, buf, 26, SEND_NACK_LAST);
   i2c_master_stop(cmd);
   ret = i2c_master_cmd_begin(I2C_NUM_0, cmd, pdMS_TO_TICKS(50));
   i2c_cmd_link_delete(cmd);
-  if (ret != ESP_OK) return ret;
+  if (ret != ESP_OK) {
+    ESP_LOGW(TAG, "error %d reading first calibration block", ret);
+    return ret;
+  }
 
-  bme280->dig_t1 = ((uint16_t)buf[1] << 8) | buf[0];
-  bme280->dig_t2 = ((int16_t)buf[3] << 8) | buf[2];
-  bme280->dig_t3 = ((int16_t)buf[5] << 8) | buf[4];
+  dev->dig_t1 = (buf[1] << 8) | buf[0];
+  dev->dig_t2 = ((uint16_t)buf[3] << 8) | (uint16_t)buf[2];
+  dev->dig_t3 = ((uint16_t)buf[5] << 8) | (uint16_t)buf[4];
 
-  bme280->dig_p1 = ((uint16_t)buf[7] << 8) | buf[6];
-  bme280->dig_p2 = ((int16_t)buf[9] << 8) | buf[8];
-  bme280->dig_p3 = ((int16_t)buf[11] << 8) | buf[10];
-  bme280->dig_p4 = ((int16_t)buf[13] << 8) | buf[12];
-  bme280->dig_p5 = ((int16_t)buf[15] << 8) | buf[14];
-  bme280->dig_p6 = ((int16_t)buf[17] << 8) | buf[16];
-  bme280->dig_p7 = ((int16_t)buf[19] << 8) | buf[18];
-  bme280->dig_p8 = ((int16_t)buf[21] << 8) | buf[20];
-  bme280->dig_p9 = ((int16_t)buf[23] << 8) | buf[22];
+  dev->dig_p1 = ((uint16_t)buf[7] << 8) | (uint16_t)buf[6];
+  dev->dig_p2 = ((uint16_t)buf[9] << 8) | (uint16_t)buf[8];
+  dev->dig_p3 = ((uint16_t)buf[11] << 8) | (uint16_t)buf[10];
+  dev->dig_p4 = ((uint16_t)buf[13] << 8) | (uint16_t)buf[12];
+  dev->dig_p5 = ((uint16_t)buf[15] << 8) | (uint16_t)buf[14];
+  dev->dig_p6 = ((uint16_t)buf[17] << 8) | (uint16_t)buf[16];
+  dev->dig_p7 = ((uint16_t)buf[19] << 8) | (uint16_t)buf[18];
+  dev->dig_p8 = ((uint16_t)buf[21] << 8) | (uint16_t)buf[20];
+  dev->dig_p9 = ((uint16_t)buf[23] << 8) | (uint16_t)buf[22];
 
-  bme280->dig_h1 = buf[24];
+  dev->dig_h1 = buf[25];  /* buf[24] (address 0xA0) is unused. */
 
   /* Read the second block. */
   cmd = i2c_cmd_link_create();
@@ -69,67 +80,85 @@ static esp_err_t read_compensation_values(ahoy_bme280_t *bme280) {
   i2c_master_write_byte(cmd, 0xE1, CHECK_ACK);
   i2c_master_start(cmd);
   i2c_master_write_byte(cmd, ADDRESS << 1 | I2C_MASTER_READ, CHECK_ACK);
-  i2c_master_read(cmd, buf, 6, SEND_NACK_LAST);
+  i2c_master_read(cmd, buf, 7, SEND_NACK_LAST);
   i2c_master_stop(cmd);
   ret = i2c_master_cmd_begin(I2C_NUM_0, cmd, pdMS_TO_TICKS(50));
   i2c_cmd_link_delete(cmd);
-  if (ret != ESP_OK) return ret;
+  if (ret != ESP_OK) {
+    ESP_LOGW(TAG, "error %d reading second calibration block", ret);
+    return ret;
+  }
 
-  bme280->dig_h2 = ((int16_t)buf[1] << 8) | buf[0];
-  bme280->dig_h3 = buf[2];
-  bme280->dig_h4 = ((uint16_t)buf[3] << 4) | (buf[4] & 0b00001111);
-  bme280->dig_h5 = ((uint16_t)buf[5] << 4) | ((buf[4] & 0b11110000) >> 4);
+  dev->dig_h2 = ((uint16_t)buf[1] << 8) | (uint16_t)buf[0];
+  dev->dig_h3 = buf[2];
+  dev->dig_h4 = ((uint16_t)buf[3] << 4) | ((uint16_t)buf[4] & 0b1111);
+  dev->dig_h5 = ((uint16_t)buf[5] << 4) | ((uint16_t)buf[4] >> 4);
+  dev->dig_h6 = buf[6];
   
+  ESP_LOGI(TAG, "read compensation values:");
+  ESP_LOGI(TAG, "T %u %d %d", dev->dig_t1, dev->dig_t2, dev->dig_t3);
+  ESP_LOGI(TAG, "P %u %d %d %d %d %d %d %d %d",
+           dev->dig_p1, dev->dig_p2, dev->dig_p3,
+           dev->dig_p4, dev->dig_p5, dev->dig_p6,
+           dev->dig_p7, dev->dig_p8, dev->dig_p9);
+  ESP_LOGI(TAG, "H %u %d %u %d %d %u", dev->dig_h1, dev->dig_h2,
+           dev->dig_h3, dev->dig_h4, dev->dig_h5, dev->dig_h6);
+
   return ESP_OK;
 }
 
-esp_err_t ahoy_bme280_init(ahoy_bme280_t *bme280) {
-  ESP_ERROR_CHECK(install(bme280));
-  ESP_ERROR_CHECK(read_compensation_values(bme280));
+esp_err_t ahoy_bme280_init(ahoy_bme280_device_t *dev) {
+  ESP_ERROR_CHECK(install(dev));
+  ESP_ERROR_CHECK(read_compensation_values(dev));
   return ESP_OK;
 }
   
-/* Returns "t_fine" for computing pressure and humidity compensation.
-   Temperature in degC = t_fine / 5120. */
-static int32_t compensate_t_fine(const ahoy_bme280_t *bme280, int32_t raw) {
-  const int32_t v1 = (raw >> 3) - (bme280->dig_t1 << 1);
-  const int32_t v2 = ((raw >> 4) - bme280->dig_t1) >> 6;
-  return ((v1 * bme280->dig_t2) >> 11) + ((v2 * v2 * bme280->dig_t3) >> 14);
+/* Returns "t_fine" for pressure and humidity compensation. degC = t_fine / 5120. */
+static int32_t compensate_t_fine(const ahoy_bme280_device_t *dev, int32_t raw) {
+  int32_t var1 = (((int32_t)((raw / 8) - ((int32_t)dev->dig_t1 * 2))) * ((int32_t)dev->dig_t2)) / 2048;
+  int32_t var2 = (int32_t)((raw / 16) - ((int32_t)dev->dig_t1));
+  var2 = (((var2 * var2) / 4096) * ((int32_t)dev->dig_t3)) / 16384;
+  return var1 + var2;
 }
 
-// Returns pressure in Pa.
-static uint32_t compensate_pressure(const ahoy_bme280_t *bme280, int32_t raw) {
-  int32_t v1 = (bme280->t_fine >> 1) - 64000;
-  int32_t v2 = (((((v1 >> 2) * (v1 >> 2)) >> 11) * bme280->dig_p6 +
-                 (v1 * bme280->dig_p5 << 1)) >> 2) + (bme280->dig_p4 << 16);
-  v1 = ((32768 + ((((bme280->dig_p3 * (((v1 >> 2) * (v1 >> 2)) >> 13)) >> 3) +
-                   ((bme280->dig_p2 * v1) >> 1)) >> 18)) * bme280->dig_p1) >> 15;
-  if (v1 == 0) return 0;
-  uint32_t p = (((uint32_t)(1048576 - raw) - (v2 >> 12))) * 3125;
-  p = p & 0x80000000 ? (p / (uint32_t)v1) << 1 : (p << 1) / (uint32_t)v1;
-  return (uint32_t)((int32_t)p + ((((bme280->dig_p9 * ((int32_t)(((p >> 3) * (p >> 3)) >> 13))) >> 12) +
-                                   ((((int32_t)(p >> 2)) * bme280->dig_p8) >> 13) +
-                                   bme280->dig_p7) >> 4));
+// Returns pressure in Pa; atmospheric pressure at sea level is about 100_000 Pa.
+static uint32_t compensate_pressure(const ahoy_bme280_device_t *dev, int32_t raw) {
+  int32_t var1 = (((int32_t)dev->t_fine) / 2) - (int32_t)64000;
+  int32_t var2 = (((var1 / 4) * (var1 / 4)) / 2048) * ((int32_t)dev->dig_p6);
+  var2 = var2 + ((var1 * ((int32_t)dev->dig_p5)) * 2);
+  var2 = (var2 / 4) + (((int32_t)dev->dig_p4) * 65536);
+  int32_t var3 = (dev->dig_p3 * (((var1 / 4) * (var1 / 4)) / 8192)) / 8;
+  int32_t var4 = (((int32_t)dev->dig_p2) * var1) / 2;
+  var1 = (var3 + var4) / 262144;
+  var1 = (((32768 + var1)) * ((int32_t)dev->dig_p1)) / 32768;
+  if (!var1) return 0;
+  uint32_t var5 = (uint32_t)((uint32_t)1048576) - raw;
+  uint32_t pressure = ((uint32_t)(var5 - (uint32_t)(var2 / 4096))) * 3125;
+  pressure = (pressure < 0x80000000) ? (pressure << 1) / ((uint32_t)var1)
+                                     : (pressure / (uint32_t)var1) * 2;
+  var1 = (((int32_t)dev->dig_p9) * ((int32_t)(((pressure / 8) * (pressure / 8)) / 8192))) / 4096;
+  var2 = (((int32_t)(pressure / 4)) * ((int32_t)dev->dig_p8)) / 8192;
+  return (uint32_t)((int32_t)pressure + ((var1 + var2 + dev->dig_p7) / 16));
 }
 
-// Returns humidity in %RH, a value from 0 to 100.
-static int8_t compensate_humidity(const ahoy_bme280_t *bme280, int32_t raw) {
-  int32_t v = bme280->t_fine - 76800;
-  v =
-    ((((raw << 14) - (bme280->dig_h4 << 20) - bme280->dig_h5 * v) + 16384) >> 15) *
-    (((((((v * bme280->dig_h6) >> 10) *
-         (((v * bme280->dig_h3) >> 11) + 32768)) >> 10) + 2097152) * bme280->dig_h2 + 8192) >> 14);
-  v -= ((((v >> 15) * (v >> 15)) >> 7) * bme280->dig_h1) >> 4;
-  /* The code from the datasheet shifts right 12 bits to return a fixed-point value in
-     22.10 format. The sensor itself is only accurate to +/- 1% or so, so we'll shift
-     those bits off and return an integer value. */
-  return v < 0 ? 0 : v >> 22;
-}
+// Returns humidity in 1000 * %RH, a value from 0_000 to 100_000.
+static uint32_t compensate_humidity(const ahoy_bme280_device_t *dev, int32_t raw) {
+  int32_t var1 = dev->t_fine - ((int32_t)76800);
+  int32_t var2 = (int32_t)(raw * 16384);
+  int32_t var3 = (int32_t)(((int32_t)dev->dig_h4) * 1048576);
+  int32_t var4 = ((int32_t)dev->dig_h5) * var1;
+  int32_t var5 = (((var2 - var3) - var4) + (int32_t)16384) / 32768;
+  var2 = (var1 * ((int32_t)dev->dig_h6)) / 1024;
+  var3 = (var1 * ((int32_t)dev->dig_h3)) / 2048;
+  var4 = ((var2 * (var3 + (int32_t)32768)) / 1024) + (int32_t)2097152;
+  var2 = ((var4 * ((int32_t)dev->dig_h2)) + 8192) / 16384;
+  var3 = var5 * var2;
+  var4 = ((var3 / 32768) * (var3 / 32768)) / 128;
+  var5 = var3 - ((var4 * ((int32_t)dev->dig_h1)) / 16);
+  return (uint32_t)(var5 < 0 ? 0 : var5 > 409600000 ? 100000 : var5 / 4096);
+  }
 
-esp_err_t ahoy_bme280_read_once(ahoy_bme280_t *bme280,
-                                int8_t *temperature_degc,
-                                uint32_t *pressure_pa,
-                                int8_t *relative_humidity_pct) {
+esp_err_t ahoy_bme280_read_once(ahoy_bme280_device_t *dev, ahoy_bme280_measurements_t *out) {
   i2c_cmd_handle_t cmd;
   esp_err_t ret;
   uint8_t buf[8] = { 0, 0, 0, 0, 0, 0, 0, 0 };
@@ -177,10 +206,22 @@ esp_err_t ahoy_bme280_read_once(ahoy_bme280_t *bme280,
   i2c_cmd_link_delete(cmd);
   if (ret != ESP_OK) return ret;
 
-  bme280->t_fine = compensate_t_fine(bme280, ((uint32_t)buf[3] << 12) | ((uint32_t)buf[4] << 4) | (buf[5] >> 4));
-  *temperature_degc = (bme280->t_fine * 5 + 128) >> 8;
-  *pressure_pa = compensate_pressure(bme280, ((uint32_t)buf[0] << 12) | ((uint32_t)buf[1] << 4) | (buf[2] >> 4));
-  *relative_humidity_pct = compensate_humidity(bme280, ((uint32_t)buf[6] << 8) | buf[7]);
+  ESP_LOGD(TAG, "read sensor values: "
+           "P [%02x %02x %02x ==> %u] "
+           "T [%02x %02x %02x ==> %u] "
+           "H [%02x %02x ==> %u]",
+           buf[0], buf[1], buf[2], (buf[0] << 12) | (buf[1] << 4) | (buf[2] >> 4),
+           buf[3], buf[4], buf[5], (buf[3] << 12) | (buf[4] << 4) | (buf[5] >> 4),
+           buf[6], buf[7], (buf[6] << 8) | buf[7]);
+
+  dev->t_fine = compensate_t_fine(dev, ((((buf[3] << 8) | buf[4]) << 8) | buf[5]) >> 4);
+
+  out->temperature_degc =
+    AHOY_TO_FIXED((dev->t_fine * 5 + 128) / 256) / 100;
+  out->pressure_pa =
+    compensate_pressure(dev, ((((buf[0] << 8) | buf[1]) << 8) | buf[2]) >> 4);
+  out->relative_humidity_pct =
+    AHOY_TO_FIXED(compensate_humidity(dev, (buf[6] << 8) | buf[7]) / 10) / 100;
 
   return ESP_OK;
 }

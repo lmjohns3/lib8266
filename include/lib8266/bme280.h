@@ -15,35 +15,38 @@ typedef struct {
      arithmetic for compensation requires larger containers to avoid
      losing precision. */
 
-  int32_t t_fine;  // signed 32.
+  int32_t t_fine;
 
-  int32_t dig_t1;  // unsigned 16.
-  int32_t dig_t2;
-  int32_t dig_t3;
+  uint16_t dig_t1;
+  int16_t dig_t2;
+  int16_t dig_t3;
 
-  int64_t dig_p1;  // unsigned 16.
-  int64_t dig_p2;
-  int64_t dig_p3;
-  int64_t dig_p4;
-  int64_t dig_p5;
-  int64_t dig_p6;
-  int64_t dig_p7;
-  int64_t dig_p8;
-  int64_t dig_p9;
+  uint16_t dig_p1;
+  int16_t dig_p2;
+  int16_t dig_p3;
+  int16_t dig_p4;
+  int16_t dig_p5;
+  int16_t dig_p6;
+  int16_t dig_p7;
+  int16_t dig_p8;
+  int16_t dig_p9;
 
-  int32_t dig_h1;  // unsigned 8.
-  int32_t dig_h2;
-  int32_t dig_h3;  // unsigned 8.
-  int32_t dig_h4;
-  int32_t dig_h5;
-  int32_t dig_h6;  // signed 8.
-} ahoy_bme280_t;
+  uint8_t dig_h1;
+  int16_t dig_h2;
+  uint8_t dig_h3;
+  int16_t dig_h4;
+  int16_t dig_h5;
+  int8_t dig_h6;
+} ahoy_bme280_device_t;
 
-esp_err_t ahoy_bme280_init(ahoy_bme280_t *bme280);
+typedef struct {
+  ahoy_fixed_t temperature_degc;
+  uint32_t relative_humidity_pct;
+  uint32_t pressure_pa;
+} ahoy_bme280_measurements_t;
 
-esp_err_t ahoy_bme280_read_once(ahoy_bme280_t *bme280,
-                                int8_t *temperature_degc,
-                                uint32_t *pressure_pa,
-                                int8_t *relative_humidity_pct);
+esp_err_t ahoy_bme280_init(ahoy_bme280_device_t *dev);
+
+esp_err_t ahoy_bme280_read_once(ahoy_bme280_device_t *dev, ahoy_bme280_measurements_t *out);
 
 #endif
