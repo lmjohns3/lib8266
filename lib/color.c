@@ -13,10 +13,10 @@ void ahoy_color_rgb_to_hsi(uint32_t rgb, ahoy_fixed_t *hsi) {
     radius = AHOY_TO_FIXED(6) * (max - min),
     _1_3 = AHOY_FIXED_1 / 3,
     _2_3 = AHOY_FIXED_1 * 2 / 3,
-    hue = AHOY_FIXED_ABS_FRACTION(max == min ?                     0 :
-                                  max == r ?        (g - b) / radius :
-                                  max == g ? _1_3 + (b - r) / radius :
-                                             _2_3 + (r - g) / radius);
+    hue = AHOY_FIXED_FRACTIONAL_PART(max == min ?                     0 :
+                                     max == r ?        (g - b) / radius :
+                                     max == g ? _1_3 + (b - r) / radius :
+                                                _2_3 + (r - g) / radius);
   hsi[0] = hue < 0 ? hue + AHOY_FIXED_1 : hue;
   hsi[1] = saturation;
   hsi[2] = intensity;

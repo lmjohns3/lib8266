@@ -1,8 +1,17 @@
 #include "lib8266/fixed.h"
 
-/* Compute the product of two fixed-point values. */
+/* Compute the product of two fixed-point values.
+ *
+ * Each fixed point value [x] is represented internally as [x * scale]; computing the
+ * normal product of [x] and [y] would give [x * y * scale * scale], so we just need to
+ * divide out one of the [scale]s. Dividing this value out after doing the multiply could
+ * cause overflow and then loss of precision, so we'll split up the scale bits and divide
+ * each factor before doing the multiply. Seems like this is a reasonable compromise
+ * between overflow and loss of precision. */
 ahoy_fixed_t ahoy_fixed_mul(ahoy_fixed_t a, ahoy_fixed_t b) {
-  return (a * b) >> AHOY_FIXED_FRACTION_BITS;
+  const uint8_t a_shift = AHOY_FIXED_FRACTION_BITS / 2;
+  const uint8_t b_shift = AHOY_FIXED_FRACTION_BITS - a_shift;
+  return (a >> a_shift) * (b >> b_shift);
 }
 
 /* Compute the fixed-point base-e exponential function, exp(x) = e^x.
