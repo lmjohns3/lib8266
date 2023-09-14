@@ -5,15 +5,38 @@
 
 #include "driver/i2c.h"
 
-typedef struct {
-  uint16_t scl_pin;
-  uint16_t sda_pin;
-  uint16_t clk_stretch_tick;
+typedef enum {
+  OVERSAMPLING_DISABLED = 0b000,
+  OVERSAMPLING_1X = 0b001,
+  OVERSAMPLING_2X = 0b010,
+  OVERSAMPLING_4X = 0b011,
+  OVERSAMPLING_8X = 0b100,
+  OVERSAMPLING_16X = 0b101,
+} ahoy_bme280_oversampling_t;
 
-  /* Values for compensating raw sensor readings. Unless otherwise
-     noted, each value actually holds a signed 16-bit value; the
-     arithmetic for compensation requires larger containers to avoid
-     losing precision. */
+typedef enum {
+  IIR_FILTER_DISABLED = 0b000,
+  IIR_FILTER_2 = 0b001,
+  IIR_FILTER_4 = 0b010,
+  IIR_FILTER_8 = 0b011,
+  IIR_FILTER_16 = 0b100,
+} ahoy_bme280_iir_filter_t;
+
+typedef struct {
+  /* Configuration for the I²C interface. */
+
+  int16_t scl_pin;
+  int16_t sda_pin;
+  int16_t clk_stretch_tick;
+
+  /* Sensing configuration. */
+
+  ahoy_bme280_oversampling_t temperature_oversampling;
+  ahoy_bme280_oversampling_t humidity_oversampling;
+  ahoy_bme280_oversampling_t pressure_oversampling;
+  ahoy_bme280_iir_filter_t iir_filter;
+
+  /* Values for compensating raw sensor readings. */
 
   int32_t t_fine;
 
@@ -41,7 +64,7 @@ typedef struct {
 
 typedef struct {
   ahoy_fixed_t temperature_degc;
-  uint32_t relative_humidity_pct;
+  ahoy_fixed_t relative_humidity_pct;
   uint32_t pressure_pa;
 } ahoy_bme280_measurements_t;
 

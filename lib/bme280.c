@@ -163,16 +163,16 @@ esp_err_t ahoy_bme280_read_once(ahoy_bme280_device_t *dev, ahoy_bme280_measureme
   esp_err_t ret;
   uint8_t buf[8] = { 0, 0, 0, 0, 0, 0, 0, 0 };
 
-  /* Set up measurements -- hard-coded oversampling and filter settings for now. */
+  /* Set up measurements. */
   cmd = i2c_cmd_link_create();
   i2c_master_start(cmd);
   i2c_master_write_byte(cmd, ADDRESS << 1 | I2C_MASTER_WRITE, CHECK_ACK);
   i2c_master_write_byte(cmd, 0xF2, CHECK_ACK);
-  i2c_master_write_byte(cmd, 0b00000001, CHECK_ACK);
+  i2c_master_write_byte(cmd, 0b00000000 | dev->humidity_oversampling, CHECK_ACK);
   i2c_master_write_byte(cmd, 0xF4, CHECK_ACK);
-  i2c_master_write_byte(cmd, 0b00100101, CHECK_ACK);
+  i2c_master_write_byte(cmd, 0b00000001 | (dev->temperature_oversampling << 5) | (dev->pressure_oversampling << 2), CHECK_ACK);
   i2c_master_write_byte(cmd, 0xF5, CHECK_ACK);
-  i2c_master_write_byte(cmd, 0b00000000, CHECK_ACK);
+  i2c_master_write_byte(cmd, 0b00000000 | (dev->iir_filter << 2), CHECK_ACK);
   i2c_master_stop(cmd);
   ret = i2c_master_cmd_begin(I2C_NUM_0, cmd, pdMS_TO_TICKS(50));
   i2c_cmd_link_delete(cmd);
