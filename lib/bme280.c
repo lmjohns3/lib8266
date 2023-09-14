@@ -163,6 +163,7 @@ esp_err_t ahoy_bme280_read_once(ahoy_bme280_device_t *dev, ahoy_bme280_measureme
   esp_err_t ret;
   uint8_t buf[8] = { 0, 0, 0, 0, 0, 0, 0, 0 };
 
+  /* Set up measurements -- hard-coded oversampling and filter settings for now. */
   cmd = i2c_cmd_link_create();
   i2c_master_start(cmd);
   i2c_master_write_byte(cmd, ADDRESS << 1 | I2C_MASTER_WRITE, CHECK_ACK);
