@@ -43,7 +43,7 @@ static void poll(void *arg) {
   params *p = arg;
   TickType_t last_wake_time = xTaskGetTickCount();
   for (;;) {
-    ahoy_wifi_wait_until_connected();
+    ahoy_wifi_wait_until_connected(1 << 31);
     esp_http_client_handle_t client = esp_http_client_init(p->http);
     ESP_LOGI("http-poll", "Checking for update from %s...", p->http->url);
     esp_err_t err = esp_http_client_perform(client);

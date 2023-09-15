@@ -5,7 +5,7 @@ static const char *TAG = "⚓ httpd";
 
 esp_err_t ahoy_httpd_init(httpd_handle_t *server) {
   httpd_config_t config = HTTPD_DEFAULT_CONFIG();
-  ahoy_wifi_wait_until_connected();
+  ahoy_wifi_wait_until_connected(1 << 31);
   ESP_LOGI(TAG, "Starting HTTP server on port %d", config.server_port);
   return httpd_start(server, &config);
 }

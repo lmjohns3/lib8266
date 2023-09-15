@@ -42,29 +42,17 @@ static void wifi_event_handler(void *arg,
   case WIFI_EVENT_STA_CONNECTED: {
     wifi_event_sta_connected_t *data = (wifi_event_sta_connected_t *)event_data;
     data->ssid[data->ssid_len] = '\0';
-    ESP_LOGI(TAG, "STA_CONNECTED -- ssid %s bssid %c%c%c%c%c%c channel %d",
-             data->ssid,
-             data->bssid[0] || '_',
-             data->bssid[1] || '_',
-             data->bssid[2] || '_',
-             data->bssid[3] || '_',
-             data->bssid[4] || '_',
-             data->bssid[5] || '_',
-             data->channel);
+    ESP_LOGI(TAG, "STA_CONNECTED -- ssid %s bssid %02x%02x%02x%02x%02x%02x channel %d",
+             data->ssid, data->bssid[0], data->bssid[1], data->bssid[2],
+             data->bssid[3], data->bssid[4], data->bssid[5], data->channel);
     break;
   }
   case WIFI_EVENT_STA_DISCONNECTED: {
     wifi_event_sta_disconnected_t *data = (wifi_event_sta_disconnected_t *)event_data;
     data->ssid[data->ssid_len] = '\0';
-    ESP_LOGI(TAG, "STA_DISCONNECTED -- ssid %s bssid %c%c%c%c%c%c reason %d %s",
-             data->ssid,
-             data->bssid[0] || '_',
-             data->bssid[1] || '_',
-             data->bssid[2] || '_',
-             data->bssid[3] || '_',
-             data->bssid[4] || '_',
-             data->bssid[5] || '_',
-             data->reason,
+    ESP_LOGI(TAG, "STA_DISCONNECTED -- ssid %s bssid %02x%02x%02x%02x%02x%02x reason %d %s",
+             data->ssid, data->bssid[0], data->bssid[1], data->bssid[2],
+             data->bssid[3], data->bssid[4], data->bssid[5], data->reason,
              data->reason == 2 ? "AUTH_EXPIRE" :
              data->reason == 4 ? "ASSOC_EXPIRE" :
              data->reason == 8 ? "ASSOC_LEAVE" :
@@ -74,6 +62,8 @@ static void wifi_event_handler(void *arg,
              data->reason == 207 ? "BASIC_RATE_NOT_SUPPORT" :
              "");
     xEventGroupClearBits(wifi_event_group, AHOY_WIFI_CONNECTED_BIT);
+    if (data->reason == 207)
+      esp_wifi_set_protocol(ESP_IF_WIFI_STA, WIFI_PROTOCOL_11B | WIFI_PROTOCOL_11G | WIFI_PROTOCOL_11N);
     if (data->reason != 8) esp_wifi_connect();
     break;
   }
@@ -100,15 +90,9 @@ static void wifi_event_handler(void *arg,
   }
   case WIFI_EVENT_STA_WPS_ER_PIN: {
     wifi_event_sta_wps_er_pin_t *data = (wifi_event_sta_wps_er_pin_t *)event_data;
-    ESP_LOGI(TAG, "STA_WPS_ER_PIN -- %c%c%c%c%c%c%c%c",
-             data->pin_code[0] || '_',
-             data->pin_code[1] || '_',
-             data->pin_code[2] || '_',
-             data->pin_code[3] || '_',
-             data->pin_code[4] || '_',
-             data->pin_code[5] || '_',
-             data->pin_code[6] || '_',
-             data->pin_code[7] || '_');
+    ESP_LOGI(TAG, "STA_WPS_ER_PIN -- %02x%02x%02x%02x%02x%02x%02x%02x",
+             data->pin_code[0], data->pin_code[1], data->pin_code[2], data->pin_code[3],
+             data->pin_code[4], data->pin_code[5], data->pin_code[6], data->pin_code[7]);
     break;
   }
   case WIFI_EVENT_AP_START: {
@@ -121,38 +105,23 @@ static void wifi_event_handler(void *arg,
   }
   case WIFI_EVENT_AP_STACONNECTED: {
     wifi_event_ap_staconnected_t *data = (wifi_event_ap_staconnected_t *)event_data;
-    ESP_LOGI(TAG, "AP_STACONNECTED -- %c%c%c%c%c%c AID %d",
-             data->mac[0] || '_',
-             data->mac[1] || '_',
-             data->mac[2] || '_',
-             data->mac[3] || '_',
-             data->mac[4] || '_',
-             data->mac[5] || '_',
-             data->aid);
+    ESP_LOGI(TAG, "AP_STACONNECTED -- %02x%02x%02x%02x%02x%02x AID %d",
+             data->mac[0], data->mac[1], data->mac[2],
+             data->mac[3], data->mac[4], data->mac[5], data->aid);
     break;
   }
   case WIFI_EVENT_AP_STADISCONNECTED: {
     wifi_event_ap_stadisconnected_t *data = (wifi_event_ap_stadisconnected_t *)event_data;
-    ESP_LOGI(TAG, "AP_STADISCONNECTED -- %c%c%c%c%c%c AID %d",
-             data->mac[0] || '_',
-             data->mac[1] || '_',
-             data->mac[2] || '_',
-             data->mac[3] || '_',
-             data->mac[4] || '_',
-             data->mac[5] || '_',
-             data->aid);
+    ESP_LOGI(TAG, "AP_STADISCONNECTED -- %02x%02x%02x%02x%02x%02x AID %d",
+             data->mac[0], data->mac[1], data->mac[2],
+             data->mac[3], data->mac[4], data->mac[5], data->aid);
     break;
   }
   case WIFI_EVENT_AP_PROBEREQRECVED: {
     wifi_event_ap_probe_req_rx_t *data = (wifi_event_ap_probe_req_rx_t *)event_data;
-    ESP_LOGI(TAG, "AP_PROBEREQRECVED -- %c%c%c%c%c%c RSSI %d",
-             data->mac[0] || '_',
-             data->mac[1] || '_',
-             data->mac[2] || '_',
-             data->mac[3] || '_',
-             data->mac[4] || '_',
-             data->mac[5] || '_',
-             data->rssi);
+    ESP_LOGI(TAG, "AP_PROBEREQRECVED -- %02x%02x%02x%02x%02x%02x RSSI %d",
+             data->mac[0], data->mac[1], data->mac[2],
+             data->mac[3], data->mac[4], data->mac[5], data->rssi);
     break;
   }
   default:
@@ -211,8 +180,11 @@ esp_err_t ahoy_wifi_init_ap(const char *ssid, const char *pass) {
   return ESP_OK;
 }
 
-void ahoy_wifi_wait_until_connected() {
-  xEventGroupWaitBits(wifi_event_group, AHOY_WIFI_CONNECTED_BIT, false, true, portMAX_DELAY);
+/* Return false if we timed out before connection. */
+bool ahoy_wifi_wait_until_connected(uint32_t timeout_msec) {
+  return (xEventGroupWaitBits(
+      wifi_event_group, AHOY_WIFI_CONNECTED_BIT, false, true, pdMS_TO_TICKS(timeout_msec)
+  ) & AHOY_WIFI_CONNECTED_BIT) == AHOY_WIFI_CONNECTED_BIT;
 }
 
 esp_err_t ahoy_wifi_deinit() {
