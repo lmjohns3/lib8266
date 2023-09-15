@@ -29,7 +29,7 @@ static esp_err_t wait_for_measurement(const ahoy_sht3x_handle_t sht3x) {
   if (ret != ESP_OK) return ret;
 
   AHOY_GPIO_DISABLE_OUTPUT(sht3x->scl_pin);
-  const int64_t mark = esp_timer_get_time() + 1000 * sht3x->read_timeout_msec;
+  const int64_t mark = esp_timer_get_time() + 1000 * sht3x->read_timeout_ms;
   while (AHOY_GPIO_READ(sht3x->scl_pin) == 0) {
     if (esp_timer_get_time() >= mark) {
       AHOY_GPIO_ENABLE_OUTPUT(sht3x->scl_pin);

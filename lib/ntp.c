@@ -52,8 +52,8 @@ esp_err_t ahoy_ntp_sync() {
     if (len != 48) {
       ESP_LOGE(TAG, "recvfrom failed: errno %d", errno);
     } else {
-      const int64_t elapsed_usec = esp_timer_get_time() - mark;
-      ESP_LOGD(TAG, "received NTP response after %u usec:", (uint32_t)elapsed_usec);
+      const int64_t elapsed_us = esp_timer_get_time() - mark;
+      ESP_LOGD(TAG, "received NTP response after %u µs:", (uint32_t)elapsed_us);
 
       const uint8_t li = rx[0] & 0b11000000;
       const uint8_t vn = rx[0] & 0b00111000;

@@ -181,9 +181,9 @@ esp_err_t ahoy_wifi_init_ap(const char *ssid, const char *pass) {
 }
 
 /* Return false if we timed out before connection. */
-bool ahoy_wifi_wait_until_connected(uint32_t timeout_msec) {
+bool ahoy_wifi_wait_until_connected(uint32_t timeout_ms) {
   return (xEventGroupWaitBits(
-      wifi_event_group, AHOY_WIFI_CONNECTED_BIT, false, true, pdMS_TO_TICKS(timeout_msec)
+      wifi_event_group, AHOY_WIFI_CONNECTED_BIT, false, true, pdMS_TO_TICKS(timeout_ms)
   ) & AHOY_WIFI_CONNECTED_BIT) == AHOY_WIFI_CONNECTED_BIT;
 }
 

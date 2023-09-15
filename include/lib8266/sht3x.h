@@ -15,7 +15,7 @@ typedef struct {
   uint16_t sda_pin;
   uint16_t scl_pin;
   uint16_t clk_stretch_tick;
-  uint16_t read_timeout_msec;
+  uint16_t read_timeout_ms;
   bool read_with_clock_stretch;
   ahoy_sht3x_repeatability_t repeatability;
 } ahoy_sht3x_t;
