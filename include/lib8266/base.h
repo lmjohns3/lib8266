@@ -20,13 +20,17 @@
 /* Get the current unix timestamp. */
 time_t ahoy_now();
 
-/* Get the clock counter. */
+/* Get the current clock counter. */
 uint32_t ahoy_ccount();
 
 /* Busy-wait (at least) the given number of microseconds or clock ticks. */
 void ahoy_busy_wait_us(uint32_t wait_us);
 void ahoy_busy_wait_ticks(uint32_t ticks);
 
-uint8_t ahoy_crc8(uint8_t polynomial, uint8_t *bytes, uint8_t num_bytes);
+/* Compute a crc8 redundancy check. */
+uint8_t ahoy_crc8(uint8_t polynomial, const uint8_t *bytes, uint8_t num_bytes);
+
+/* Start a task that restarts the ESP after a delay (in seconds). */
+void ahoy_restart_after(uint32_t delay_s, uint32_t priority);
 
 #endif
