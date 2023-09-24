@@ -14,6 +14,7 @@ ahoy_mqtt_handle_t ahoy_mqtt_init(const char *server, uint16_t queue_size);
 
 esp_err_t ahoy_mqtt_periodic_heartbeat(ahoy_mqtt_handle_t mqtt,
                                        uint32_t period_s,
+                                       uint32_t period_jitter_s,
                                        uint32_t priority,
                                        const char *topic);
 
@@ -23,7 +24,7 @@ esp_err_t ahoy_mqtt_publish_queued(ahoy_mqtt_handle_t mqtt);
 
 esp_err_t ahoy_mqtt_periodic_publish(ahoy_mqtt_handle_t mqtt,
                                      uint32_t period_s,
-                                     uint32_t timeout_s,
+                                     uint32_t wifi_timeout_s,
                                      uint32_t priority);
 
 #endif
